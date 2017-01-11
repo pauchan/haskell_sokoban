@@ -4,19 +4,24 @@ import System.Environment
 import System.IO
 import Data.List
 
-readMap :: String -> [[Char]] -> [[Char]]
-readMap x y = x : y
+
+readMap :: String -> [String]
+readMap x = lines x
 
 main :: IO ()
 main = do
 	args <- getArgs
-	handle <- openFile (head args) ReadMode
-	contents <- hGetContents handle
-	let map = readMap contents []
-	putStr (head map)
-	hClose handle
+	contents <- readFile (head args)
+	let level = readMap contents
+	putStr (head level)
+	command <- getChar
+	let move = decodeUserInput command
+	let l = applyMoveToMap level move
+	putStr (head l)
 
-applyMoveToMap :: [[Char]] -> (Int, Int) -> [[Char]]
+	
+
+applyMoveToMap :: [String] -> (Int, Int) -> [String]
 applyMoveToMap = undefined
 
 -- the (Int, Int) tuple as a second parameter denotes
