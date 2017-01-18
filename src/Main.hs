@@ -14,12 +14,21 @@ main = do
 	contents <- readFile (head args)
 	let level = readMap contents
 	putStr (head level)
+	gameLoop level
+	putStr (head l)
+
+renderMap :: [String] -> [String]
+renderMap x = putStr (head x)
+	return (tail x)
+	
+
+gameLoop :: [String] -> ()
+gameLoop command = do 
 	command <- getChar
 	let move = decodeUserInput command
 	let l = applyMoveToMap level move
-	putStr (head l)
-
-	
+	renderMap l
+	gameLoop l
 
 applyMoveToMap :: [String] -> (Int, Int) -> [String]
 applyMoveToMap = undefined
