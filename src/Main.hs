@@ -13,17 +13,17 @@ main = do
 	args <- getArgs
 	contents <- readFile (head args)
 	let level = readMap contents
-	putStr (head level)
 	gameLoop level
-	putStr (head l)
 
-renderMap :: [String] -> [String]
-renderMap x = putStr (head x)
-	return (tail x)
+renderMap :: [String] -> IO ()
+renderMap x = do
+	putStrLn (head x)
+	if length x == 1 then return ()
+	else  renderMap (tail x)
 	
 
-gameLoop :: [String] -> ()
-gameLoop command = do 
+gameLoop :: [String] -> IO ()
+gameLoop level = do 
 	command <- getChar
 	let move = decodeUserInput command
 	let l = applyMoveToMap level move
@@ -31,12 +31,12 @@ gameLoop command = do
 	gameLoop l
 
 applyMoveToMap :: [String] -> (Int, Int) -> [String]
-applyMoveToMap = undefined
+applyMoveToMap a b = a
 
 -- the (Int, Int) tuple as a second parameter denotes
 -- (horizontal/vertical orientation (0/1), back or forward(-1/1))
 move :: (Int, Int) -> (Int, Int) -> (Int, Int)
-move = undefined
+move x y = x
 
 decodeUserInput :: Char -> (Int, Int)
 decodeUserInput x = case x of
