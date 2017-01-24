@@ -41,23 +41,44 @@ applyMoveToMap map coords =
 	    noWorkerMap = eraseWorker map
 	in drawWorker noWorkerMap newWorkerPos
 
+processChar :: Char -> Int -> Int -> Char
+processChar char a b
+  | a == b = 'o'
+  | otherwise = char
+
+putWorkerInString :: String -> (Int,Int) -> (Int,Int) -> String
+putWorkerInString string a b
+  | first a == first b = processChar 
+  | otherwise = string
+
+putWorkerInString :: String -> Int -> String
+putWorkerInString line x =
+  let xCoords = zip line [0..]
+  in map (processChar.snd.x) xCoords
+
+insertWorker :: [String] -> (Int, Int) -> [String]
+insertWorker board position =
+   --let yCoordBoard = zip [0..] board
+  let coords = map (zip.[0..])
+  in map (putWorkerInString.) coords
+
 
 
 eraseWorker :: [String] -> [String]
 eraseWorker board =
   let repl 'o' = ' '
       repl c = c
-  in map map repl board
+  in map (map repl) board
 
-drawWorker :: [String] -> (Int, Int) -> [String]
-drawWorker = undefined
+-- drawWorker :: [String] -> (Int, Int) -> [String]
+-- drawWorker = undefined
 
 -- the (Int, Int) tuple as a second parameter denotes
 -- (horizontal/vertical orientation (0/1), back or forward(-1/1))
 move :: (Int, Int) -> (Int, Int) -> (Int, Int)
 move origin div
-  | fst div == 0 = (fst x + snd y, snd x)
-  | fst div == 1 = (fst x, snd x + snd y)
+  | fst div == 0 = (fst origin + snd div, snd origin)
+  | fst div == 1 = (fst origin, snd origin + snd div)
   | otherwise = (0,0)
 
 getCoords :: [String] -> [(Maybe Int, Int)]
