@@ -39,28 +39,31 @@ applyMoveToMap map coords =
 	let workerPos = findWorker map
 	    newWorkerPos = move workerPos coords
 	    noWorkerMap = eraseWorker map
-	in drawWorker noWorkerMap newWorkerPos
+	in insertWorker noWorkerMap newWorkerPos
 
-processChar :: Char -> Int -> Int -> Char
-processChar char a b
-  | a == b = 'o'
-  | otherwise = char
+processChar :: Int -> (Int,Char) -> Char
+processChar yPos char
+  | fst char == yPos = 'o'
+  | otherwise = snd char
 
-putWorkerInString :: String -> (Int,Int) -> (Int,Int) -> String
-putWorkerInString string a b
-  | first a == first b = processChar 
-  | otherwise = string
+processString :: String -> Int -> String
+processString line yPos =
+  let yCorrds = zip [0..] line
+  in map (processChar yPos) yCorrds
 
-putWorkerInString :: String -> Int -> String
-putWorkerInString line x =
-  let xCoords = zip line [0..]
-  in map (processChar.snd.x) xCoords
+putWorkerInString :: (Int, Int) -> (Int,String) -> String
+putWorkerInString position line
+  | fst line == fst position = processString (snd line) (snd position)
+  | otherwise = snd line
+
+  --let xCoords = zip line [0..]
+  --in map (processChar.snd.x) xCoords
 
 insertWorker :: [String] -> (Int, Int) -> [String]
 insertWorker board position =
    --let yCoordBoard = zip [0..] board
-  let coords = map (zip.[0..])
-  in map (putWorkerInString.) coords
+  let coords = zip  [0..] board
+  in map (putWorkerInString position) coords
 
 
 
@@ -70,15 +73,12 @@ eraseWorker board =
       repl c = c
   in map (map repl) board
 
--- drawWorker :: [String] -> (Int, Int) -> [String]
--- drawWorker = undefined
-
 -- the (Int, Int) tuple as a second parameter denotes
 -- (horizontal/vertical orientation (0/1), back or forward(-1/1))
 move :: (Int, Int) -> (Int, Int) -> (Int, Int)
 move origin div
-  | fst div == 0 = (fst origin + snd div, snd origin)
-  | fst div == 1 = (fst origin, snd origin + snd div)
+  | fst div == 0 = (snd origin, fst origin + snd div)
+  | fst div == 1 = (snd origin + snd div, fst origin)
   | otherwise = (0,0)
 
 getCoords :: [String] -> [(Maybe Int, Int)]
