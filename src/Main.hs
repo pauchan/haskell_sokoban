@@ -34,12 +34,31 @@ gameLoop level = do
 	renderMap l
 	gameLoop l
 
+charAtIndex :: [String] -> (Int, Int) -> Char
+charAtIndex board position =
+	let row = board !! fst position
+	in row !! snd position
+
 applyMoveToMap :: [String] -> (Int, Int) -> [String]
 applyMoveToMap map coords =
 	let workerPos = findWorker map
 	    newWorkerPos = move workerPos coords
-	    noWorkerMap = eraseWorker map
-	in insertWorker noWorkerMap newWorkerPos
+	    nextChar = charAtIndex map newWorkerPos
+	in calculateNextMove workerPos newWorkerPos nextChar map 
+
+calculateNextMove :: (Int, Int) -> (Int, Int) -> Char -> [String] -> [String]
+calculateNextMove workerPos newWorkerPos nextChar map
+   | nextChar == '#' = map
+   | nextChar == '@' = moveCrate workerPos newWorkerPos nextChar map 
+   | otherwise = insertWorker (eraseWorker map) newWorkerPos 
+
+moveCrate :: (Int,Int) -> (Int,Int) -> Char -> [String] -> [String]
+moveCrate = undefined
+
+insertWorker :: [String] -> (Int, Int) -> [String]
+insertWorker board position =
+  let coords = zip  [0..] board
+  in map (putWorkerInString position) coords
 
 processChar :: Int -> (Int,Char) -> Char
 processChar yPos char
@@ -55,17 +74,6 @@ putWorkerInString :: (Int, Int) -> (Int,String) -> String
 putWorkerInString position line
   | fst line == fst position = processString (snd line) (snd position)
   | otherwise = snd line
-
-  --let xCoords = zip line [0..]
-  --in map (processChar.snd.x) xCoords
-
-insertWorker :: [String] -> (Int, Int) -> [String]
-insertWorker board position =
-   --let yCoordBoard = zip [0..] board
-  let coords = zip  [0..] board
-  in map (putWorkerInString position) coords
-
-
 
 eraseWorker :: [String] -> [String]
 eraseWorker board =
