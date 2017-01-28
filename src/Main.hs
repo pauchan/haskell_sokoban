@@ -49,30 +49,48 @@ applyMoveToMap map coords =
 calculateNextMove :: (Int, Int) -> (Int, Int) -> Char -> [String] -> [String]
 calculateNextMove workerPos newWorkerPos nextChar map
    | nextChar == '#' = map
-   | nextChar == '@' = moveCrate workerPos newWorkerPos nextChar map 
+   | nextChar == '@' = moveCrate workerPos newWorkerPos map 
    | otherwise = insertWorker (eraseWorker map) newWorkerPos 
 
-moveCrate :: (Int,Int) -> (Int,Int) -> Char -> [String] -> [String]
-moveCrate = undefined
+moveCrate :: (Int,Int) -> (Int,Int) -> [String] -> [String]
+moveCrate previousPos nextPos map =
+  let cratePos = extrapolate previousPos nextPos
+  in renderCrate cratePos nextPos map
+
+renderCrate :: (Int,Int) -> (Int,Int) -> [String] -> [String]
+renderCrate cratePos nextPos map
+  | charAtIndex map cratePos == '#' = map
+  | otherwise = insertCrate (insertWorker (eraseWorker map) nextPos) cratePos
+
+extrapolate :: (Int,Int) -> (Int,Int) -> (Int, Int)
+extrapolate previousPos nextPos
+  | fst previousPos == fst nextPos = (fst nextPos, snd nextPos + (snd nextPos - snd previousPos))
+  | snd previousPos == snd nextPos = (fst nextPos + (fst nextPos - fst previousPos), snd nextPos) 
+  | otherwise = error (show previousPos ++ show nextPos)
+
+insertCrate :: [String] -> (Int, Int) -> [String]
+insertCrate board position =
+  let coords = zip  [0..] board
+  in map (putInString position '@') coords
 
 insertWorker :: [String] -> (Int, Int) -> [String]
 insertWorker board position =
   let coords = zip  [0..] board
-  in map (putWorkerInString position) coords
+  in map (putInString position 'o') coords
 
-processChar :: Int -> (Int,Char) -> Char
-processChar yPos char
-  | fst char == yPos = 'o'
+processChar :: Int -> Char -> (Int,Char) -> Char
+processChar yPos newChar char
+  | fst char == yPos = newChar
   | otherwise = snd char
 
-processString :: String -> Int -> String
-processString line yPos =
+processString :: String -> Int -> Char -> String
+processString line yPos char =
   let yCorrds = zip [0..] line
-  in map (processChar yPos) yCorrds
+  in map (processChar yPos char) yCorrds
 
-putWorkerInString :: (Int, Int) -> (Int,String) -> String
-putWorkerInString position line
-  | fst line == fst position = processString (snd line) (snd position)
+putInString :: (Int, Int) -> Char -> (Int,String) -> String
+putInString position char line
+  | fst line == fst position = processString (snd line) (snd position) char
   | otherwise = snd line
 
 eraseWorker :: [String] -> [String]
@@ -85,24 +103,24 @@ eraseWorker board =
 -- (horizontal/vertical orientation (0/1), back or forward(-1/1))
 move :: (Int, Int) -> (Int, Int) -> (Int, Int)
 move origin div
-  | fst div == 0 = (snd origin, fst origin + snd div)
-  | fst div == 1 = (snd origin + snd div, fst origin)
+  | fst div == 1 = (fst origin + snd div ,snd origin)
+  | fst div == 0 = (fst origin, snd origin + snd div)
   | otherwise = (0,0)
 
-getCoords :: [String] -> [(Maybe Int, Int)]
+getCoords :: [String] -> [(Int, Maybe Int)]
 getCoords board =
   let xPosition = map (elemIndex 'o') board
       yPosition = [0..(length board)]
-  in zip xPosition yPosition
+  in zip yPosition xPosition
 
 findWorker :: [String] -> (Int, Int)
 findWorker board =
   let results = getCoords board
-      single = filter (isJust.fst) results
+      single = filter (isJust.snd) results
       s = head single
-      a = fromMaybe 0 (fst s)
-      b = snd s
-  in (,) a b
+      a = fromMaybe 0 (snd s)
+      b = fst s
+  in (,) b a
 
 decodeUserInput :: Char -> (Int, Int)
 decodeUserInput x = case x of
