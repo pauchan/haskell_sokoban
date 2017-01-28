@@ -5,7 +5,7 @@ import System.IO
 import Data.List
 import System.Process
 import Data.Maybe
-
+import System.Exit
 
 
 readMap :: String -> [String]
@@ -31,8 +31,19 @@ gameLoop level = do
 	system "clear"
 	let userInput = decodeUserInput command
 	let l = applyMoveToMap level userInput
-	renderMap l
-	gameLoop l
+    	renderMap l
+    	determineNextStep l
+
+determineNextStep :: [String] -> IO ()
+determineNextStep board
+  | gameWon board = exitSuccess
+  | otherwise = gameLoop board
+
+gameWon :: [String] -> Bool
+gameWon board = foldr (+) 0 ((map charsInString) board) == 0
+
+charsInString :: String -> Int
+charsInString str = length (filter (== 'O') str)
 
 charAtIndex :: [String] -> (Int, Int) -> Char
 charAtIndex board position =
