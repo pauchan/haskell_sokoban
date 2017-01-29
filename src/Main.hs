@@ -7,37 +7,60 @@ import System.Process
 import Data.Maybe
 import System.Exit
 
-
 readMap :: String -> [String]
 readMap x = lines x
 
 main :: IO ()
 main = do
 	args <- getArgs
-	contents <- readFile (head args)
-	let level = readMap contents
-	gameLoop level
+  contents <- readFile (head args)
+  let level = readMap contents
+  let mask = generateMask level
+  gameLoop level mask
 
 renderMap :: [String] -> IO ()
 renderMap x = do
 	putStrLn (head x)
 	if length x == 1 then return ()
-	else  renderMap (tail x)
-	
+	else renderMap (tail x)
 
-gameLoop :: [String] -> IO ()
-gameLoop level = do 
+generateMask :: [String] -> [String]
+generateMask board = map extractMaskLine board
+
+extractMaskLine :: String -> String
+extractMaskLine boardLine = map extractMask boardLine
+
+extractMask :: Char -> Char
+extractMask char
+  | char == 'O' = char
+  | otherwise = ' '
+  
+gameLoop :: [String] -> [String] -> IO ()
+gameLoop level mask = do 
 	command <- getChar
 	system "clear"
+  let maskMap = createMask level mask
 	let userInput = decodeUserInput command
 	let l = applyMoveToMap level userInput
-    	renderMap l
-    	determineNextStep l
+  let m = updateMap l 
+    	renderMap m
+    	determineNextStep m mask
 
-determineNextStep :: [String] -> IO ()
+updateMap :: [String] -> [String] -> [String]
+updateMap board mask = zipWith updateCrateLine board mask
+
+updateCrateLine :: String -> String -> String 
+updateCrateField boardLine maskLine = zipWith updateCrateField boardLine maskLine
+
+updateCrateField :: Char -> Char -> Char 
+updateCrateField boardChar maskChar
+  | boardChar == ' ' && maskChar 'o' = 'o'
+  | otherwise = boardChar
+
+determineNextStep :: [String] -> [String] -> IO ()
 determineNextStep board
   | gameWon board = exitSuccess
-  | otherwise = gameLoop board
+  | otherwise = gameLoop board mask
 
 gameWon :: [String] -> Bool
 gameWon board = foldr (+) 0 ((map charsInString) board) == 0
