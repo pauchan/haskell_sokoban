@@ -13,10 +13,10 @@ readMap x = lines x
 main :: IO ()
 main = do
 	args <- getArgs
-  contents <- readFile (head args)
-  let level = readMap contents
-  let mask = generateMask level
-  gameLoop level mask
+	contents <- readFile (head args)
+	let level = readMap contents
+	let mask = generateMask level
+	gameLoop level mask
 
 renderMap :: [String] -> IO ()
 renderMap x = do
@@ -39,10 +39,9 @@ gameLoop :: [String] -> [String] -> IO ()
 gameLoop level mask = do 
 	command <- getChar
 	system "clear"
-  let maskMap = createMask level mask
 	let userInput = decodeUserInput command
 	let l = applyMoveToMap level userInput
-  let m = updateMap l 
+	let m = updateMap l mask
     	renderMap m
     	determineNextStep m mask
 
@@ -50,23 +49,28 @@ updateMap :: [String] -> [String] -> [String]
 updateMap board mask = zipWith updateCrateLine board mask
 
 updateCrateLine :: String -> String -> String 
-updateCrateField boardLine maskLine = zipWith updateCrateField boardLine maskLine
+updateCrateLine boardLine maskLine = zipWith updateCrateField boardLine maskLine
 
 updateCrateField :: Char -> Char -> Char 
 updateCrateField boardChar maskChar
-  | boardChar == ' ' && maskChar 'o' = 'o'
+  | boardChar == ' ' && maskChar == 'O' = 'O'
   | otherwise = boardChar
 
 determineNextStep :: [String] -> [String] -> IO ()
-determineNextStep board
-  | gameWon board = exitSuccess
+determineNextStep board mask
+  | gameWon board mask = exitSuccess
   | otherwise = gameLoop board mask
 
-gameWon :: [String] -> Bool
-gameWon board = foldr (+) 0 ((map charsInString) board) == 0
+gameWon :: [String] -> [String] -> Bool
+gameWon board mask = foldr (+) 0 (zipWith charsInString board mask) == 0
 
-charsInString :: String -> Int
-charsInString str = length (filter (== 'O') str)
+charsInString :: String -> String -> Int
+charsInString boardStr charStr = foldr (+) 0 (zipWith crateOnPlace boardStr charStr)
+
+crateOnPlace :: Char -> Char -> Int
+crateOnPlace boardChar maskChar
+	| boardChar /= '@' && maskChar == 'O' = 1
+	| otherwise = 0
 
 charAtIndex :: [String] -> (Int, Int) -> Char
 charAtIndex board position =
