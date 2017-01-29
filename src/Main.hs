@@ -97,7 +97,7 @@ moveCrate previousPos nextPos map =
 
 renderCrate :: (Int,Int) -> (Int,Int) -> [String] -> [String]
 renderCrate cratePos nextPos map
-  | charAtIndex map cratePos == '#' = map
+  | charAtIndex map cratePos == '#' || charAtIndex map cratePos == 'o' = map
   | otherwise = insertCrate (insertWorker (eraseWorker map) nextPos) cratePos
 
 extrapolate :: (Int,Int) -> (Int,Int) -> (Int, Int)
