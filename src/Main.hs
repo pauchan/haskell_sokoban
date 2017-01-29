@@ -32,7 +32,7 @@ extractMaskLine boardLine = map extractMask boardLine
 
 extractMask :: Char -> Char
 extractMask char
-  | char == 'O' = char
+  | char == '.' = char
   | otherwise = ' '
   
 gameLoop :: [String] -> [String] -> IO ()
@@ -53,7 +53,7 @@ updateCrateLine boardLine maskLine = zipWith updateCrateField boardLine maskLine
 
 updateCrateField :: Char -> Char -> Char 
 updateCrateField boardChar maskChar
-  | boardChar == ' ' && maskChar == 'O' = 'O'
+  | boardChar == ' ' && maskChar == '.' = '.'
   | otherwise = boardChar
 
 determineNextStep :: [String] -> [String] -> IO ()
@@ -69,7 +69,7 @@ charsInString boardStr charStr = foldr (+) 0 (zipWith crateOnPlace boardStr char
 
 crateOnPlace :: Char -> Char -> Int
 crateOnPlace boardChar maskChar
-	| boardChar /= '@' && maskChar == 'O' = 1
+	| boardChar /= 'o' && maskChar == '.' = 1
 	| otherwise = 0
 
 charAtIndex :: [String] -> (Int, Int) -> Char
@@ -87,7 +87,7 @@ applyMoveToMap map coords =
 calculateNextMove :: (Int, Int) -> (Int, Int) -> Char -> [String] -> [String]
 calculateNextMove workerPos newWorkerPos nextChar map
    | nextChar == '#' = map
-   | nextChar == '@' = moveCrate workerPos newWorkerPos map 
+   | nextChar == 'o' = moveCrate workerPos newWorkerPos map 
    | otherwise = insertWorker (eraseWorker map) newWorkerPos 
 
 moveCrate :: (Int,Int) -> (Int,Int) -> [String] -> [String]
@@ -109,12 +109,12 @@ extrapolate previousPos nextPos
 insertCrate :: [String] -> (Int, Int) -> [String]
 insertCrate board position =
   let coords = zip  [0..] board
-  in map (putInString position '@') coords
+  in map (putInString position 'o') coords
 
 insertWorker :: [String] -> (Int, Int) -> [String]
 insertWorker board position =
   let coords = zip  [0..] board
-  in map (putInString position 'o') coords
+  in map (putInString position '@') coords
 
 processChar :: Int -> Char -> (Int,Char) -> Char
 processChar yPos newChar char
@@ -133,7 +133,7 @@ putInString position char line
 
 eraseWorker :: [String] -> [String]
 eraseWorker board =
-  let repl 'o' = ' '
+  let repl '@' = ' '
       repl c = c
   in map (map repl) board
 
@@ -147,7 +147,7 @@ move origin div
 
 getCoords :: [String] -> [(Int, Maybe Int)]
 getCoords board =
-  let xPosition = map (elemIndex 'o') board
+  let xPosition = map (elemIndex '@') board
       yPosition = [0..(length board)]
   in zip yPosition xPosition
 
